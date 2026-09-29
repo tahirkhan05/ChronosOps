@@ -1,0 +1,24 @@
+# ChronosOps - Autonomous SRE Incident Copilot & Causal Memory Nexus
+# Python 3.10+
+
+# --- Web Framework ---
+fastapi>=0.111.0
+
+# --- Data Validation (used by FastAPI request/response models) ---
+pydantic>=2.0.0
+
+# --- ASGI Server ---
+uvicorn>=0.29.0
+h11>=0.14.0
+
+# --- HTTP Client (Gemini API calls in llm_client.py) ---
+httpx>=0.27.0
+
+# --- Static File Serving (frontend mount in app.py) ---
+aiofiles>=23.2.0
+
+# --- Hindsight Memory Engine (Vectorize) ---
+hindsight-client>=0.10.0
+
+# --- Environment & Configuration ---
+python-dotenv>=1.0.0
