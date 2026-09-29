@@ -1,0 +1,35 @@
+# Environment & secrets
+.env
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.venv/
+venv/
+env/
+
+# Extracted text files (generated, not needed in repo)
+content_guide.txt
+problem_statement.txt
+
+# Original problem statement docs (keep .env.example, exclude private docs)
+Hackathon Content Guide.docx
+HackwithHyderabad 3.0 Problem Statament.docx
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db

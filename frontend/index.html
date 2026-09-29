@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChronosOps | Enterprise SRE War Room & Causal Incident Memory Nexus</title>
+    <meta name="description" content="Autonomous SRE incident copilot with persistent memory powered by Vectorize Hindsight. Mitigates repeat cloud outages through multi-strategy TEMPR incident recall.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="sre-dark">
+    <!-- Clean Minimal Header: Logo & Tabs Only -->
+    <header class="app-topbar">
+        <div class="brand-badge">
+            <svg class="brand-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+            <div class="brand-titles">
+                <span class="brand-name">CHRONOS<span class="text-cyan">OPS</span></span>
+                <span class="brand-sub">SRE Causal Memory Nexus</span>
+            </div>
+        </div>
+
+        <nav class="topbar-tabs">
+            <button class="nav-btn active" data-tab="war-room" id="tabWarRoom">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                War Room
+            </button>
+            <button class="nav-btn" data-tab="benchmark" id="tabBenchmark">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                Time-Machine Benchmark
+            </button>
+            <button class="nav-btn" data-tab="memory-bank" id="tabMemoryBank">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                Hindsight Memory Bank
+            </button>
+            <button class="nav-btn" data-tab="postmortem" id="tabPostmortem">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                Post-Mortem Studio
+            </button>
+        </nav>
+    </header>
+
+    <!-- Main Workspace Area -->
+    <main class="workspace-container">
+
+        <!-- ==================== TAB 1: LIVE WAR ROOM ==================== -->
+        <section id="war-room-view" class="view-panel active">
+            
+            <!-- Outage Scenario Control Bar -->
+            <div class="control-panel-bar">
+                <div class="scenario-selector-group">
+                    <span class="control-label">ACTIVE SEV INCIDENT:</span>
+                    <div class="scenario-selector-chips" id="scenarioChipsContainer">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+
+                <button class="btn btn-action-primary" id="btnRunTriage">
+                    <span class="btn-spinner" id="triageSpinner" style="display:none;"></span>
+                    <svg class="btn-icon-svg" id="triageIconSvg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                    <span id="btnTriageText">Run ChronosOps Triage</span>
+                </button>
+            </div>
+
+            <!-- War Room Split Layout -->
+            <div class="war-room-layout">
+                
+                <!-- Left Column: Telemetry, Sparkline & Active Logs -->
+                <div class="war-col telemetry-column">
+                    
+                    <!-- Incident Header Summary Card -->
+                    <div class="card panel-card">
+                        <div class="panel-header-row">
+                            <div class="badge-row">
+                                <span class="badge badge-sev" id="activeSeverityBadge">SEV-1</span>
+                                <span class="badge badge-svc" id="activeServiceBadge">payment-service</span>
+                                <span class="badge badge-meta" id="activeIncidentRef">PD-98421</span>
+                                <span class="badge badge-meta" id="activeEnvBadge">us-east-1</span>
+                            </div>
+                            <div class="oncall-badge">
+                                <span class="dot-sm green"></span>
+                                <span id="onCallName">Dave Miller (Staff SRE)</span>
+                            </div>
+                        </div>
+
+                        <h1 class="panel-incident-title" id="activeIncidentTitle">Payment Gateway HTTP 504 Spike & Consumer Lag Explosion</h1>
+
+                        <!-- Telemetry Grid -->
+                        <div class="telemetry-stat-grid" id="telemetryGrid">
+                            <!-- Populated dynamically -->
+                        </div>
+
+                        <!-- Live P99 Latency Sparkline Graph -->
+                        <div class="sparkline-section">
+                            <div class="sparkline-header">
+                                <span class="spark-label">LIVE P99 LATENCY WAVEFORM (LAST 15 MIN)</span>
+                                <span class="spark-current text-danger" id="sparkCurrentVal">8,200 ms (Degraded)</span>
+                            </div>
+                            <div class="sparkline-canvas-wrapper">
+                                <canvas id="latencyCanvas" width="540" height="70"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Symptoms Checklist -->
+                        <div class="symptoms-container">
+                            <div class="symptoms-title">TRIGGERED ALERTS & OUTAGE SYMPTOMS:</div>
+                            <ul class="symptoms-list" id="activeSymptomsList"></ul>
+                        </div>
+                    </div>
+
+                    <!-- Kubernetes Streaming Event Log -->
+                    <div class="card panel-card terminal-card">
+                        <div class="terminal-header">
+                            <div class="terminal-dots">
+                                <span class="dot red"></span>
+                                <span class="dot yellow"></span>
+                                <span class="dot green"></span>
+                            </div>
+                            <span class="terminal-name">KUBERNETES CONTAINER LOG STREAM (TAIL -F)</span>
+                            <span class="terminal-live-badge"><span class="pulse-dot-sm"></span> STREAMING</span>
+                        </div>
+                        <div class="terminal-scroll-view" id="terminalLogs"></div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Hindsight Memory Tracer & Prescribed Runbook -->
+                <div class="war-col triage-column">
+
+                    <!-- Hindsight Memory Tracer Card -->
+                    <div class="card panel-card memory-tracer-panel" id="memoryTracerCard">
+                        <div class="tracer-header-row">
+                            <div class="tracer-title-group">
+                                <div class="tracer-icon-box">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                                </div>
+                                <div>
+                                    <h3 class="tracer-heading">HINDSIGHT TEMPR MEMORY RECALL</h3>
+                                    <span class="tracer-sub" id="tracerSubText">Multi-Strategy Temporal, Entity Graph & Causal Match</span>
+                                </div>
+                            </div>
+                            <div class="tracer-confidence-badge" id="confidenceBadge">98% RELEVANCE</div>
+                        </div>
+
+                        <!-- Recalled Incident Body -->
+                        <div class="recalled-incident-content" id="recalledIncidentBox">
+                            <div class="recalled-meta-bar">
+                                <span class="precedent-tag" id="matchTag">HISTORICAL POST-MORTEM PRECEDENT</span>
+                                <span class="recalled-days" id="matchTime">Retained 45 days ago</span>
+                            </div>
+                            <h4 class="recalled-title" id="recalledTitle">INC-8821: Kafka Consumer Group Rebalance Storm</h4>
+                            <p class="recalled-body-text" id="recalledContent">
+                                Root Cause: Pod restarts in payment-service caused rapid consumer rebalances in 'order-tx-events'. Rollback without partition draining caused 34 minutes of cascading DB locks. Never restart without running `/opt/sre/drain-kafka.sh`.
+                            </p>
+
+                            <!-- TEMPR Score Breakdown Gauges -->
+                            <div class="tempr-gauges-grid">
+                                <div class="tempr-gauge">
+                                    <div class="gauge-top"><span>Semantic</span><span class="gauge-val" id="scoreSemanticNum">0.96</span></div>
+                                    <div class="gauge-track"><div class="gauge-fill fill-cyan" id="scoreSemantic" style="width: 96%;"></div></div>
+                                </div>
+                                <div class="tempr-gauge">
+                                    <div class="gauge-top"><span>Entity Graph</span><span class="gauge-val" id="scoreGraphNum">0.99</span></div>
+                                    <div class="gauge-track"><div class="gauge-fill fill-purple" id="scoreGraph" style="width: 99%;"></div></div>
+                                </div>
+                                <div class="tempr-gauge">
+                                    <div class="gauge-top"><span>Keyword</span><span class="gauge-val" id="scoreKeywordNum">0.94</span></div>
+                                    <div class="gauge-track"><div class="gauge-fill fill-emerald" id="scoreKeyword" style="width: 94%;"></div></div>
+                                </div>
+                                <div class="tempr-gauge">
+                                    <div class="gauge-top"><span>Temporal</span><span class="gauge-val" id="scoreTemporalNum">0.91</span></div>
+                                    <div class="gauge-track"><div class="gauge-fill fill-amber" id="scoreTemporal" style="width: 91%;"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Prescribed Remediation Plan -->
+                    <div class="card panel-card action-panel">
+                        <div class="action-panel-header">
+                            <div>
+                                <h3 class="action-heading">PRESCRIBED REMEDIATION RUNBOOK</h3>
+                                <span class="action-sub">Institutional Guardrails Enforced</span>
+                            </div>
+                            <span class="guard-badge">Negative Constraint Active</span>
+                        </div>
+
+                        <!-- Danger Banner -->
+                        <div class="danger-alert-box" id="dangerBanner">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            <span id="dangerBannerText">PREVENTED DESTRUCTIVE ACTION: Blocked uncoordinated pod restart which previously triggered a 34-minute cascading partition rebalance storm.</span>
+                        </div>
+
+                        <!-- Action Steps -->
+                        <div class="action-steps-list" id="actionsChecklist">
+                            <!-- Populated dynamically -->
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="action-controls-row">
+                            <button class="btn btn-execute-runbook" id="btnExecuteRemediation">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                <span>Execute Autonomous Runbook</span>
+                            </button>
+                            <button class="btn btn-secondary" id="btnGeneratePostmortem">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                                <span>Generate Post-Mortem</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Live Execution Console -->
+                    <div class="card panel-card runbook-console-card" id="runbookConsole" style="display:none;">
+                        <div class="console-topbar">
+                            <div class="console-title-group">
+                                <span class="pulse-dot-sm"></span>
+                                <span class="console-title">RUNBOOK EXECUTION PIPELINE</span>
+                            </div>
+                            <span class="console-status" id="runbookStatus">INITIALIZING...</span>
+                        </div>
+                        <div class="console-progress-track">
+                            <div class="console-progress-bar" id="runbookProgressBar" style="width: 0%;"></div>
+                        </div>
+                        <div class="console-body" id="runbookLogBody"></div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ==================== TAB 2: TIME-MACHINE BENCHMARK ==================== -->
+        <section id="benchmark-view" class="view-panel">
+            <div class="benchmark-hero-header">
+                <div class="hero-chip">THE HINDSIGHT ADVANTAGE</div>
+                <h2 class="hero-title">Why Stateless AI Fails in Production vs Hindsight Memory</h2>
+                <p class="hero-desc">
+                    In enterprise distributed systems, treating symptoms with generic LLM advice causes catastrophic cascading outages. 
+                    Compare the exact outcomes side-by-side across 4 mission-critical scenarios.
+                </p>
+            </div>
+
+            <!-- Benchmark Scenarios Selector -->
+            <div class="benchmark-nav-chips" id="benchmarkPills"></div>
+
+            <!-- Comparison Cards Split -->
+            <div class="benchmark-grid">
+                
+                <!-- Stateless AI Card (Left) -->
+                <div class="card benchmark-card card-stateless">
+                    <div class="bench-head head-stateless">
+                        <div class="bench-icon-wrap icon-stateless">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="bench-card-title">Stateless AI (Without Memory)</h3>
+                            <span class="bench-card-sub">Generic LLM / Stateless Chatbot</span>
+                        </div>
+                    </div>
+
+                    <div class="bench-card-body">
+                        <div class="bench-field">
+                            <span class="field-label">Triage Diagnosis:</span>
+                            <p class="field-text" id="statelessDiagnosisText">Loading...</p>
+                        </div>
+
+                        <div class="bench-field">
+                            <span class="field-label">Prescribed Command:</span>
+                            <pre class="code-snippet snippet-danger" id="statelessActionCode">`kubectl rollout restart deployment/...`</pre>
+                        </div>
+
+                        <div class="bench-impact-box impact-danger">
+                            <div class="impact-header">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+                                <span>PRODUCTION OUTCOME / IMPACT:</span>
+                            </div>
+                            <p class="impact-text" id="statelessConsequenceText">Loading...</p>
+                        </div>
+
+                        <div class="bench-root-reason">
+                            <span class="reason-label text-danger">Root Cause of Failure:</span>
+                            <p class="reason-text" id="statelessFailureText">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hindsight AI Card (Right) -->
+                <div class="card benchmark-card card-hindsight">
+                    <div class="bench-head head-hindsight">
+                        <div class="bench-icon-wrap icon-hindsight">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="bench-card-title">ChronosOps (With Hindsight Memory)</h3>
+                            <span class="bench-card-sub">Persistent TEMPR Causal Incident Core</span>
+                        </div>
+                    </div>
+
+                    <div class="bench-card-body">
+                        <div class="bench-field">
+                            <span class="field-label">Recalled Precedent from Memory Bank:</span>
+                            <div class="precedent-pill" id="hindsightRecalledPill">INC-8821: Kafka Consumer Storm</div>
+                        </div>
+
+                        <div class="bench-field">
+                            <span class="field-label">Institutional SRE Triage:</span>
+                            <p class="field-text" id="hindsightDiagnosisText">Loading...</p>
+                        </div>
+
+                        <div class="bench-field">
+                            <span class="field-label">Safe Non-Destructive Runbook:</span>
+                            <pre class="code-snippet snippet-success" id="hindsightActionCode">`/opt/sre/drain-kafka.sh --topic ...`</pre>
+                        </div>
+
+                        <div class="bench-impact-box impact-success">
+                            <div class="impact-header">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                                <span>PRODUCTION OUTCOME / IMPACT:</span>
+                            </div>
+                            <p class="impact-text" id="hindsightConsequenceText">Loading...</p>
+                        </div>
+
+                        <div class="bench-root-reason">
+                            <span class="reason-label text-emerald">The Hindsight Advantage:</span>
+                            <p class="reason-text" id="hindsightAdvantageText">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- ==================== TAB 3: HINDSIGHT MEMORY BANK ==================== -->
+        <section id="memory-bank-view" class="view-panel">
+            <div class="memory-bank-topbar">
+                <div>
+                    <h2 class="section-title">Hindsight Memory Bank: <span class="text-cyan">chronosops-sre-nexus</span></h2>
+                    <p class="section-desc">Live inspection of retained institutional incident post-mortems, causal rules, and TEMPR retrieval vectors.</p>
+                </div>
+                <div class="memory-search-box">
+                    <input type="text" id="memorySearchInput" class="input-search" placeholder="Query memory bank (e.g. 'vault 429', 'kafka rebalance', 'socket leak')...">
+                    <button class="btn btn-action-primary" id="btnSearchMemory">Search</button>
+                </div>
+            </div>
+
+            <!-- Memory Cards Grid -->
+            <div class="memory-grid" id="memoryUnitsGrid"></div>
+        </section>
+
+
+        <!-- ==================== TAB 4: POST-MORTEM STUDIO ==================== -->
+        <section id="postmortem-view" class="view-panel">
+            <div class="postmortem-grid">
+                
+                <div class="card panel-card postmortem-form-card">
+                    <div class="panel-header-row">
+                        <h3 class="panel-heading">Autonomous Post-Mortem Retention</h3>
+                        <span class="badge badge-meta">Continuous Learning</span>
+                    </div>
+                    <p class="form-instruction">
+                        When an outage is resolved, ChronosOps synthesizes a blameless post-mortem and retains the causal rules into Hindsight so the system never makes the same mistake again.
+                    </p>
+
+                    <div class="form-field">
+                        <label class="label-text">Incident Title & Severity:</label>
+                        <input type="text" id="pmTitleInput" class="input-text" value="INC-9310: Redis Cluster Split-Brain during AWS AZ Failover">
+                    </div>
+
+                    <div class="form-field">
+                        <label class="label-text">Infrastructure Entities (Comma-separated):</label>
+                        <input type="text" id="pmEntitiesInput" class="input-text" value="redis-cluster, aws-us-east-1a, sentinel, payment-service">
+                    </div>
+
+                    <div class="form-field">
+                        <label class="label-text">Post-Mortem Root Cause & Remediation Rule (Retained into Hindsight Bank):</label>
+                        <textarea id="pmContentInput" class="input-textarea" rows="7">Root Cause: AWS AZ network partition caused Redis Sentinel in us-east-1a to elect a new master while old master continued accepting writes from local pods, creating a split-brain.
+Resolution & Golden Rule: Never enable automatic failover without quorum `min-replicas-to-write 2` and `min-replicas-max-lag 10`. During network partition alerts, execute `/opt/sre/freeze-secondary-writes.sh` before restarting any Redis nodes.</textarea>
+                    </div>
+
+                    <div class="form-action-row">
+                        <button class="btn btn-action-primary" id="btnRetainPostmortem">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                            <span>Retain to Hindsight Memory Bank</span>
+                        </button>
+                        <span class="retain-status-msg" id="retainFeedback"></span>
+                    </div>
+                </div>
+
+                <div class="card panel-card postmortem-inspector-card">
+                    <div class="panel-header-row">
+                        <h3 class="panel-heading">Hindsight API Payload Inspector</h3>
+                        <span class="badge badge-meta">client.retain()</span>
+                    </div>
+                    <pre class="json-viewer" id="jsonPreviewBox">
+{
+  "operation": "client.retain",
+  "bank_id": "chronosops-sre-nexus",
+  "mission": "Enterprise SRE Incident & Causal Post-Mortems",
+  "content": "...",
+  "tags": ["incident", "postmortem", "sev1"],
+  "tempr_indexing": {
+    "temporal_weighting": "continuous-decay",
+    "entity_linking": true,
+    "graph_hop_resolution": 3
+  }
+}
+                    </pre>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Global Toast Container -->
+    <div class="toast-stack" id="toastContainer"></div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
